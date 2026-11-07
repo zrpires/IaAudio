@@ -70,3 +70,32 @@ Testes de rotas HTTP, validação, modo local, autenticação, falhas de provedo
 - `.env.example`: variáveis disponíveis, sem credenciais.
 
 As respostas de API usam `no-store`. Requisições de outra origem são recusadas, entradas e tamanhos são validados e as saídas da interface usam texto seguro. O deploy final, chaves reais, compatibilidade de voz e operação comercial precisam ser validados no seu domínio e nas suas contas.
+
+
+## Evolução: assistente de sessões de estudo
+
+Caso de uso: estudantes que precisam sair de um objetivo vago para um bloco executável de estudo, usando voz ou texto. Exemplo: **“Quero estudar arrays em Java por 30 minutos”**.
+
+### Etapa 1 — disponível nesta alteração
+
+- Plano local determinístico para sessões de 5 a 180 minutos, com compreensão, prática e revisão. Aceita minutos e horas numéricos; sem tema ou duração, solicita os dados. O modo local não interpreta respostas curtas pelo histórico nem produz exercícios específicos.
+- IA opcional orientada ao mesmo caso de uso: pode propor exercícios e comentar tentativas. A infraestrutura existente mantém chave no servidor, senha para chamadas pagas, histórico limitado e timeout. Não foi feita chamada paga real nesta validação.
+- Transcrição preserva o texto já digitado para revisão; não envia automaticamente. Mensagens específicas para permissão negada, microfone ausente, ausência de fala e falha de rede.
+- Leitura automática desativada por padrão; opção de ouvir a última resposta e preferência por voz pt-BR disponível. Interrupção antes da escuta e ao sair da página.
+- Modo local não mostra mais um aviso indevido pedindo APP_PASSWORD quando nenhuma IA está configurada.
+
+### Etapa 2 — próxima entrega
+
+Adicionar exercício por tema com critérios de correção e acompanhamento de tentativa, testando a qualidade das respostas da IA. Antes de abrir o uso pago ao público, implementar autenticação individual e limite persistente de consumo por usuário.
+
+### Etapa 3 — após validação de uso
+
+Avaliar transcrição no servidor como alternativa para navegadores sem reconhecimento nativo, com consentimento, limites de arquivo e custo; medir tempo até resposta e taxa de abandono. Persistência de sessões e lembretes exigem implementação própria; o aplicativo não os executa atualmente.
+
+### Compatibilidade e testes manuais
+
+A presença de SpeechRecognition indica capacidade, não garante funcionamento do serviço. HTTPS, permissões, conexão e políticas do navegador podem afetar a captura. Não é garantido reconhecimento offline. A síntese e as vozes disponíveis variam por dispositivo; texto é sempre o caminho principal.
+
+Referências: [SpeechRecognition / MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition), [Web Speech API / MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API).
+
+Validar em Chrome/Edge desktop, Chrome Android, Safari iOS e Firefox: gerar plano por texto; permitir/negar microfone; revisar transcrição sem perder rascunho; enviar; ouvir e interromper resposta; repetir com microfone indisponível. Esses testes físicos estão pendentes e não são substituídos por mocks.
