@@ -13,3 +13,8 @@ test('allocations always sum to requested duration',()=>{
   }
   assert.match(studyReply('estudar Java por 2 horas'),/Tempo total: 120 minutos/);
 });
+test('follow-up answers complete missing topic or duration',()=>{
+ assert.match(studyReply('30 minutos',[{role:'user',content:'Quero estudar Java'}]),/Sessão de estudo: Java/);
+ assert.match(studyReply('Java',[{role:'user',content:'Tenho 30 minutos'}]),/Tempo total: 30 minutos/);
+ for(const message of ['Java por -30 minutos','Java por 1,5 horas'])assert.ok(!studyReply(message).includes('Tempo total:'));
+});

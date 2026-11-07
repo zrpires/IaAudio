@@ -1,7 +1,7 @@
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-const routes = new Set(['chat','health','catalog','checkout','order']);
+const routes = new Set(['chat','health']);
 const server=http.createServer(async(req,res)=>{
   try {
     const url=new URL(req.url,'http://localhost');
@@ -17,4 +17,6 @@ const server=http.createServer(async(req,res)=>{
     res.writeHead(200,{'Content-Type':{'html':'text/html; charset=utf-8','js':'text/javascript; charset=utf-8','css':'text/css; charset=utf-8'}[name.split('.').pop()]});res.end(data);
   }catch{res.writeHead(500);res.end('Erro interno');}
 });
+server.on('error',error=>{console.error(error.code==='EADDRINUSE'?'Porta ocupada. Defina PORT=3001 no arquivo .env e tente novamente.':error.message);process.exitCode=1;});
 server.listen(Number(process.env.PORT||3000),'127.0.0.1',()=>console.log(`Abra http://localhost:${process.env.PORT||3000}`));
+

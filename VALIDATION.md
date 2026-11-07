@@ -21,3 +21,12 @@ A interface de acesso protegido à IA também foi verificada no navegador, com r
 - Demonstração de produção aberta no navegador compartilhado; interface anterior confirmada. A alteração desta branch não foi publicada em produção.
 - Playwright disponível, mas Chromium não instalado no executor: teste de interface automatizado não pôde iniciar (Executable doesn't exist). Layout móvel e áudio real não foram validados.
 - Integração OpenAI coberta por mocks; sem verificação de chave, cobrança ou respostas reais.
+
+
+## Revisão operacional — 7 de novembro de 2026
+
+- `npm run check` aprovado; `npm test`: 14 testes aprovados em Node.js 24.22.1 neste executor. CI configurado para Node.js 22.
+- Servidor HTTP iniciado em processo separado: página, JS, CSS, health e geração de plano testados; acesso a `.env` recusado com 404.
+- Frontend executado em ambiente DOM simulado: texto sem reconhecimento, reprodução, transcrição sem perda de rascunho, erro de permissão, limpeza durante requisição e falha durante novo rascunho.
+- Instalação do Chromium tentada; download não forneceu um ZIP válido. Layout móvel e áudio físico não puderam ser confirmados nesta execução.
+- IA externa testada com mocks, sem chave real ou cobrança. Configuração e execução final na conta Vercel dependem das variáveis do proprietário.

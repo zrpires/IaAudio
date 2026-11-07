@@ -78,7 +78,7 @@ Caso de uso: estudantes que precisam sair de um objetivo vago para um bloco exec
 
 ### Etapa 1 — disponível nesta alteração
 
-- Plano local determinístico para sessões de 5 a 180 minutos, com compreensão, prática e revisão. Aceita minutos e horas numéricos; sem tema ou duração, solicita os dados. O modo local não interpreta respostas curtas pelo histórico nem produz exercícios específicos.
+- Plano local determinístico para sessões de 5 a 180 minutos, com compreensão, prática e revisão. Aceita minutos e horas numéricos; sem tema ou duração, solicita os dados. O modo local usa a última mensagem do usuário para completar tema ou duração que faltam. Não produz exercícios específicos.
 - IA opcional orientada ao mesmo caso de uso: pode propor exercícios e comentar tentativas. A infraestrutura existente mantém chave no servidor, senha para chamadas pagas, histórico limitado e timeout. Não foi feita chamada paga real nesta validação.
 - Transcrição preserva o texto já digitado para revisão; não envia automaticamente. Mensagens específicas para permissão negada, microfone ausente, ausência de fala e falha de rede.
 - Leitura automática desativada por padrão; opção de ouvir a última resposta e preferência por voz pt-BR disponível. Interrupção antes da escuta e ao sair da página.
@@ -99,3 +99,23 @@ A presença de SpeechRecognition indica capacidade, não garante funcionamento d
 Referências: [SpeechRecognition / MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition), [Web Speech API / MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API).
 
 Validar em Chrome/Edge desktop, Chrome Android, Safari iOS e Firefox: gerar plano por texto; permitir/negar microfone; revisar transcrição sem perder rascunho; enviar; ouvir e interromper resposta; repetir com microfone indisponível. Esses testes físicos estão pendentes e não são substituídos por mocks.
+
+
+## Rodar agora
+
+Com Node.js 22 instalado, no PowerShell ou terminal:
+
+```bash
+git clone https://github.com/zrpires/IaAudio.git
+cd IaAudio
+npm ci
+npm start
+```
+
+Se já tiver uma cópia local, preserve suas edições antes de atualizar com `git pull --ff-only`. Abra http://localhost:3000. O modo local funciona sem `.env` e sem conta de IA. Digite “Quero estudar Java”, envie e complete com “30 minutos”. Também pode informar tudo de uma vez.
+
+Para IA generativa: copie `.env.example` para `.env`, preencha `OPENAI_API_KEY` e `APP_PASSWORD`, reinicie o servidor e informe a senha na interface. Na Vercel configure essas mesmas variáveis em Settings → Environment Variables e faça redeploy. Nunca coloque chaves no frontend ou no GitHub.
+
+Correções de confiabilidade: limpar cancela a solicitação pendente e ignora respostas antigas; falhas de envio preservam um novo rascunho; não há dois envios simultâneos; microfone não inicia enquanto o chat responde; respostas inválidas do provedor recebem erro legível. Porta ocupada mostra orientação para definir PORT no `.env`.
+
+Verificação atual: `npm run check` e `npm test` (14 testes). Inclui servidor HTTP real, fluxo de texto com voz indisponível, transcrição e reprodução simuladas, cancelamento e preservação de rascunho. A voz real continua dependendo das permissões e serviços do dispositivo. O projeto não agenda lembretes nem salva sessões após recarregar.
