@@ -33,7 +33,7 @@ A chave OpenAI nunca vai para o navegador. As chamadas podem gerar custos. Confi
 
 ## Microfone e voz
 
-Use Chrome/Edge atualizado em HTTPS (a Vercel fornece HTTPS) ou localhost, e permita acesso ao microfone. A Web Speech API varia entre navegadores; quando não disponível, o chat por texto continua funcionando. O reconhecimento pode enviar áudio ao serviço do navegador; este aplicativo não grava áudio no servidor. A transcrição aparece para revisão, e só é enviada ao clicar em Enviar. A leitura depende das vozes instaladas no dispositivo.
+Use Chrome/Edge atualizado em HTTPS (a Vercel fornece HTTPS) ou localhost, e permita acesso ao microfone. A Web Speech API varia entre navegadores; quando não disponível, o chat por texto continua funcionando. O reconhecimento pode enviar áudio ao serviço do navegador; no modo nativo o aplicativo não recebe o áudio; no modo gravação ele é enviado ao servidor e à OpenAI para transcrição. A transcrição aparece para revisão, e só é enviada ao clicar em Enviar. A leitura depende das vozes instaladas no dispositivo.
 
 O chat guarda as mensagens somente na aba. Recarregar a página ou fechar a aba apaga a conversa; exporte antes. Ao usar IA, sua mensagem e até oito mensagens de histórico são enviadas à OpenAI. Não há telefonia, WhatsApp ou chamadas em segundo plano.
 
@@ -121,15 +121,35 @@ Correções de confiabilidade: limpar cancela a solicitação pendente e ignora 
 Verificação atual: `npm run check` e `npm test` (14 testes). Inclui servidor HTTP real, fluxo de texto com voz indisponível, transcrição e reprodução simuladas, cancelamento e preservação de rascunho. A voz real continua dependendo das permissões e serviços do dispositivo. O projeto não agenda lembretes nem salva sessões após recarregar.
 
 
-## Captura de voz atualizada
+## Voz no Brave e em outros navegadores
 
-1. Abra a aplicação por HTTPS ou `localhost`, preferencialmente em Chrome/Edge atualizado.
-2. Clique em **Ativar microfone** e autorize o acesso ao microfone para este site.
-3. Diga, por exemplo, “Quero estudar Java por 30 minutos”. A fala provisória aparece perto do microfone; os trechos finalizados são acrescentados ao campo de mensagem sem apagar o rascunho.
-4. Aguarde a finalização automática ou clique em **Finalizar escuta**. Revise a transcrição e clique em **Enviar mensagem**.
+O modo padrão **Gravação compatível** usa `getUserMedia` e `MediaRecorder`, sem depender de `SpeechRecognition`. O servidor envia o arquivo à OpenAI e devolve o texto para revisão. Navegadores modernos como Brave, Firefox, Chrome, Edge e Safari podem usar esse caminho quando oferecem HTTPS, microfone, permissões e um formato compatível. A interface escolhe WebM/Opus, MP4 ou Ogg conforme o suporte real do dispositivo. Não há garantia para todo navegador, versão, política corporativa ou dispositivo.
 
-**Cancelar escuta** interrompe a espera por permissão. **Parar áudio** finaliza a captura para aproveitar a transcrição pendente e interrompe a leitura. Limpar a conversa descarta os resultados atrasados. Cada clique para iniciar cria uma tentativa independente; não há escuta em segundo plano nem reinício automático. A captura é limitada a 60 segundos por tentativa.
+### Configuração necessária na Vercel
 
-Se a permissão ficar pendente por mais de 15 segundos, confira o ícone de permissões na barra de endereço e tente novamente. Em caso de microfone ocupado, conecte outro dispositivo ou feche o aplicativo que o utiliza. Erros de rede podem indicar indisponibilidade do serviço de reconhecimento do navegador: a chave OpenAI não corrige esse serviço. A captura nativa não requer chave OpenAI; não há transcrição no servidor como alternativa nesta versão. Firefox e outros navegadores sem SpeechRecognition continuam com entrada por texto.
+Em Settings → Environment Variables:
 
-Validação: 20 testes automatizados, incluindo resultados múltiplos, duplicados, eventos atrasados, prévia provisória, permissão negada, falta de microfone, erro de rede, timeouts e tentativa seguinte. Esses testes simulam o reconhecedor: não comprovam a qualidade da transcrição de um microfone físico.
+| Variável | Valor |
+| --- | --- |
+| `TRANSCRIPTION_API_KEY` | Chave da API OpenAI com saldo e acesso ao modelo |
+| `APP_PASSWORD` | Senha de acesso definida por você |
+| `TRANSCRIPTION_MODEL` | `gpt-transcribe` (padrão; pode ser substituído por um modelo de transcrição disponível na conta) |
+
+Faça **Redeploy** após salvar. Informe APP_PASSWORD em **Acesso à IA** na página. Não coloque a chave no GitHub ou no frontend. Se já houver `OPENAI_API_KEY`, ela será usada como alternativa; usar apenas `TRANSCRIPTION_API_KEY` permite manter o chat em modo local. Ter ChatGPT não confirma saldo ou acesso à API.
+
+### Uso
+
+1. Selecione **Gravação compatível (Brave e outros)**.
+2. Informe a senha, clique em **Ativar microfone** e permita o acesso.
+3. Fale seu objetivo. Clique em **Finalizar gravação** ou aguarde o limite de 60 segundos.
+4. O áudio é enviado ao servidor e à OpenAI; aguarde o texto, revise e clique em **Enviar mensagem**.
+
+**Cancelar captura** descarta a gravação antes de enviá-la. Se a transcrição já começou, o cancelamento impede que ela altere a tela; ele não garante cancelar o processamento já recebido pelo provedor. Limite de 2 MB por áudio e timeout de 45 segundos no provedor. A chave e a senha são verificadas antes de uma chamada paga. A aplicação não salva o áudio em disco; o provedor aplica suas políticas de dados. O recurso exige conexão e pode gerar custos.
+
+O modo **Reconhecimento do navegador** continua disponível como opção separada. Seu serviço pode falhar ou estar bloqueado no Brave; isso não implica defeito no microfone. Nenhum envio de áudio ao servidor ocorre nesse modo. Sem configuração da transcrição, a tela explica as variáveis pendentes em vez de prometer funcionamento. Texto continua disponível em ambos os modos.
+
+### Validação
+
+`npm run check` e `npm test`: 30 testes. Incluem captura com gravador simulado, formatos WebM/MP4/Ogg, cancelamento durante permissão e upload, liberação do microfone, autenticação, limite de tamanho, erros do provedor, integração multipart simulada e fluxo completo do cliente sem SpeechRecognition. Esses testes não comprovam transcrição real no Brave nem acesso ao modelo na sua conta; falta configurar a chave e realizar uma gravação real no dispositivo.
+
+Referência: https://developers.openai.com/api/docs/guides/speech-to-text

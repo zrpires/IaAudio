@@ -10,7 +10,7 @@
     "dev": "node --env-file-if-exists=.env dev.mjs",
     "start": "node --env-file-if-exists=.env dev.mjs",
     "test": "node --test",
-    "check": "node --check public/app.js && node --check public/voice.js && node --check lib/core.js && node --check dev.mjs"
+    "check": "node --check public/app.js && node --check public/voice.js && node --check public/recorder.js && node --check api/transcribe.js && node --check lib/core.js && node --check dev.mjs"
   }
 }
 

@@ -38,3 +38,11 @@ A interface de acesso protegido à IA também foi verificada no navegador, com r
 - `npm test`: 20 testes aprovados. Cobertura de controle da captura com reconhecedor simulado, fluxo do chat e servidor HTTP real.
 - Tentativa de teste Playwright com `/usr/bin/chromium` bloqueada pelo executor: `socket() failed: Operation not permitted`, antes de abrir o navegador. Nenhum teste de voz física foi realizado.
 - Não se afirma transcrição física validada: a API nativa depende de HTTPS, permissão, microfone e serviço externo do navegador. Não foram adicionadas credenciais ou transcrição paga.
+
+
+## Alternativa ao reconhecimento do Brave
+
+- Adicionados MediaRecorder/getUserMedia e POST /api/transcribe com autenticação e tamanho limitado.
+- `npm run check` aprovado; `npm test`: 30 testes aprovados, incluindo captura sem SpeechRecognition, cancelamento, formatos e API de transcrição com provedor simulado.
+- Não foram usadas chaves reais; a operação paga ainda exige configurar TRANSCRIPTION_API_KEY (ou OPENAI_API_KEY), APP_PASSWORD e acesso ao modelo.
+- Áudio físico no Brave/Firefox/Safari não foi testado. Não se afirma compatibilidade universal ou transcrição real validada.
