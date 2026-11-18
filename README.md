@@ -60,3 +60,12 @@ npm test
 - [Transformers.js](https://github.com/huggingface/transformers.js), versão fixada em **3.8.1**, executando ONNX Runtime WASM com uma thread, sem exigir WebGPU.
 - [Xenova/whisper-tiny](https://huggingface.co/Xenova/whisper-tiny), multilíngue, quantização q8, idioma de transcrição português.
 - O worker só é iniciado quando você clica em preparar. Arquivos de terceiros são baixados por HTTPS; bibliotecas e pesos têm suas próprias licenças, disponíveis nos projetos de origem.
+
+
+## Interface e manutenção
+
+A interface usa um painel escuro com detalhes ciano, núcleo circular em SVG/CSS e animação de captura. Não carrega fontes externas ou imagens decorativas. Os controles de voz, preparação do modelo, texto, leitura, exportação e limpeza mantêm seus identificadores e fluxos.
+
+A organização se adapta para três colunas no desktop, duas no tablet e uma no celular. Há navegação por teclado, rótulos dos controles, avisos anunciados por leitores de tela e respeito à preferência por movimento reduzido.
+
+A limpeza removeu regras de catálogo e despesas que não pertencem ao IaAudio, formatação monetária não utilizada e estilos antigos de produtos, tarefas e estatísticas. A rota HTTP 410 de transcrição antiga continua como proteção para clientes desatualizados. Os módulos de voz local e reconhecimento nativo foram preservados.

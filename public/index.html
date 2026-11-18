@@ -1,1 +1,86 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Transforme um tema e o tempo disponível em uma sessão de estudo com prática e revisão."><title>IaAudio — Fale seu objetivo. Comece a estudar.</title><link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script></head><body><header><div class="brand">IaAudio</div><span id="mode" class="badge" role="status">Conectando…</span></header><main><div class="eyebrow">Seu próximo bloco de estudo</div><h1>Fale seu objetivo. Comece a estudar.</h1><p>Transforme um tema e o tempo disponível em uma sessão de estudo com prática e revisão.</p><div class="layout"><div><section class="card"><h2>Sua sessão de estudo</h2><p class="muted">Revise a transcrição antes de enviar. No modo local, o áudio fica no dispositivo. As mensagens de texto são enviadas a este aplicativo para gerar um roteiro por regras locais, sem API paga.</p><div id="messages" class="messages" role="log" aria-live="polite"><div class="bubble">Olá! O que você quer estudar e quantos minutos tem? Exemplo: estudar arrays em Java por 30 minutos.</div></div><p>Experimente: <button type="button" id="example" class="secondary">Java em 30 minutos</button></p><form id="chat-form"><label for="message">Sua mensagem</label><textarea id="message" maxlength="2000" required placeholder="Quero estudar arrays em Java por 30 minutos…"></textarea><button id="send">Enviar mensagem ↗</button></form></section></div><aside><section class="card"><h2>Uma conversa, no seu ritmo.</h2><label for="voice-engine">Modo de voz</label><select id="voice-engine"><option value="local">Voz gratuita no dispositivo (Brave e outros)</option><option value="native">Reconhecimento do navegador</option></select><p id="recording-info" class="muted">Sem chave, senha ou créditos. O primeiro uso baixa um modelo gratuito de dezenas de MB e pode demorar. A transcrição roda no seu dispositivo e usa memória e processamento. Comece com 5 a 15 segundos de fala.</p><button id="prepare-local" type="button" class="secondary">Preparar voz gratuita</button><p id="model-status" role="status" aria-live="polite"></p><div id="orb" class="voice-orb" aria-hidden="true"></div><p id="transcript-preview" role="status" aria-live="polite"></p><p id="voice-status" role="status">Pronto para ouvir</p><button id="mic" aria-pressed="false">Ativar microfone</button> <button id="stop" class="secondary">Parar áudio</button> <button id="cancel-recording" class="secondary" type="button">Cancelar captura</button><p><label><input id="speak" type="checkbox" style="width:auto"> Ler respostas em voz alta</label></p><button type="button" id="replay" class="secondary" disabled>Ouvir última resposta</button><p id="speech-status" role="status"></p><p class="muted">Clique em Ativar microfone, permita o acesso e fale. Confira a transcrição no campo de mensagem antes de enviar. A voz local requer HTTPS, permissão de microfone e suporte a WebAssembly. O modo alternativo de reconhecimento nativo pode enviar áudio ao serviço do navegador e falhar no Brave. Você sempre pode digitar.</p></section><section class="card"><h2>Guarde suas ideias</h2><button id="download" class="secondary">Exportar conversa</button> <button id="clear" class="secondary">Limpar tela</button><p class="muted">A conversa fica nesta aba e é perdida ao recarregar.</p></section></aside></div></main><div id="notice" class="notice hidden" role="status"></div><footer>IaAudio · Voz no dispositivo e planejamento gratuito</footer></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#070d14">
+  <meta name="description" content="Seu centro de comando para estudar. Voz no dispositivo, conversa por texto e planejamento gratuito.">
+  <title>IaAudio — Seu centro de comando</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#message">Ir para a mensagem</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="IaAudio, início"><span class="brand-mark" aria-hidden="true">IA<span></span></span><span>Ia<span class="accent">Audio</span><small>PERSONAL VOICE INTERFACE</small></span></a>
+    <div class="connection"><span class="status-dot" aria-hidden="true"></span><span id="mode" role="status">Conectando…</span></div>
+    <span class="header-tag">SEU FOCO. SUA FREQUÊNCIA.</span>
+  </header>
+
+  <main>
+    <div class="page-heading">
+      <div><p class="eyebrow"><span></span> SEU CENTRO DE COMANDO</p><h1>Pense em voz alta.<br><span>Transforme em ação.</span></h1></div>
+      <p class="heading-note">Um tema. Um tempo disponível.<br>Seu próximo bloco de estudo começa aqui.</p>
+    </div>
+
+    <div class="workspace">
+      <aside class="controls-panel panel" aria-labelledby="settings-title">
+        <div class="panel-heading"><span class="section-index">01</span><h2 id="settings-title">Ajuste a frequência</h2></div>
+        <div class="control-section">
+          <label for="voice-engine">Entrada de voz</label>
+          <select id="voice-engine"><option value="local">Voz gratuita no dispositivo</option><option value="native">Reconhecimento do navegador</option></select>
+          <p class="muted">O modo local funciona sem chave, senha ou créditos.</p>
+        </div>
+        <div class="control-section">
+          <h3>Saída de áudio</h3>
+          <label class="switch-row" for="speak"><span>Ler respostas em voz alta</span><input id="speak" type="checkbox"><span class="switch-track" aria-hidden="true"></span></label>
+          <button type="button" id="replay" class="button secondary replay" disabled><span aria-hidden="true">▷</span> Ouvir última resposta</button>
+          <p id="speech-status" class="micro-status" role="status"></p>
+        </div>
+        <details class="privacy-details">
+          <summary>Como a voz funciona <span aria-hidden="true">+</span></summary>
+          <p id="recording-info">No primeiro uso, baixe o modelo gratuito de dezenas de MB. A transcrição roda no dispositivo e usa sua memória e processamento. O áudio local não é enviado ao servidor. O reconhecimento nativo pode usar o serviço do navegador.</p>
+          <p>Requer HTTPS e permissão de microfone. Em dispositivos com pouca memória, prefira o texto.</p>
+        </details>
+        <div class="privacy-note"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg><div><strong>Seu áudio fica com você</strong><span>No modo de voz local.</span></div></div>
+      </aside>
+
+      <section class="voice-panel panel" aria-labelledby="voice-title">
+        <div class="panel-heading"><span class="section-index">02</span><h2 id="voice-title">Conecte suas ideias</h2><span class="live-tag">VOZ / TEXTO</span></div>
+        <div class="core-stage">
+          <span class="core-coordinate coordinate-top" aria-hidden="true">IAAUDIO / VOICE CORE</span>
+          <div id="orb" class="voice-orb" aria-hidden="true">
+            <svg class="core-grid" viewBox="0 0 320 320" fill="none"><circle cx="160" cy="160" r="148" stroke-dasharray="1 10"/><circle class="outer-arc" cx="160" cy="160" r="133" stroke-dasharray="180 32 64 32"/><circle cx="160" cy="160" r="113" stroke-dasharray="3 5"/><circle class="inner-arc" cx="160" cy="160" r="97" stroke-dasharray="230 40"/><path d="M160 0v24m0 272v24M0 160h24m272 0h24"/></svg>
+            <div class="core-halo"></div>
+            <div class="core-heart"><span class="core-monogram">IA<span>Audio</span></span><div class="waveform"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          </div>
+          <span class="core-coordinate coordinate-bottom" aria-hidden="true">PRIVACIDADE EM PRIMEIRO PLANO</span>
+        </div>
+        <div class="voice-feedback"><p id="transcript-preview" role="status" aria-live="polite"></p><p id="voice-status" role="status" aria-live="polite">Preparando interface…</p></div>
+        <div class="capture-actions">
+          <button id="prepare-local" type="button" class="button prepare"><span aria-hidden="true">↓</span> Preparar voz gratuita</button>
+          <button id="mic" type="button" class="button primary mic-button" aria-pressed="false" disabled>Ativar microfone</button>
+          <div class="secondary-actions"><button id="stop" type="button" class="button ghost">Parar áudio</button><span aria-hidden="true">/</span><button id="cancel-recording" type="button" class="button ghost">Cancelar captura</button></div>
+        </div>
+        <p id="model-status" class="model-status" role="status" aria-live="polite"></p>
+        <p class="capture-hint">Fale, finalize e revise antes de enviar.<br>Para começar, grave uma frase de 5 a 15 segundos.</p>
+      </section>
+
+      <section class="conversation-panel panel" aria-labelledby="chat-title">
+        <div class="panel-heading"><span class="section-index">03</span><h2 id="chat-title">Sua sessão</h2><span class="session-dot" aria-hidden="true"></span></div>
+        <div id="messages" class="messages" role="log" aria-label="Conversa da sessão" aria-live="polite"><div class="bubble">Olá! Qual tema você quer estudar e quanto tempo tem? Vamos transformar isso em um próximo passo.</div></div>
+        <div class="suggestion"><span>EXPERIMENTE</span><button id="example" type="button">Java em 30 minutos <span aria-hidden="true">↗</span></button></div>
+        <form id="chat-form">
+          <label for="message">Seu comando, por voz ou texto</label>
+          <textarea id="message" maxlength="2000" required placeholder="Quero estudar arrays em Java por 30 minutos…"></textarea>
+          <button id="send" class="button primary send-button">Enviar mensagem ↗</button>
+        </form>
+        <div class="conversation-tools"><button id="download" type="button" class="button ghost">Exportar conversa</button><button id="clear" type="button" class="button ghost">Limpar tela</button></div>
+        <p class="session-note">A conversa dura enquanto esta aba estiver aberta. O roteiro usa regras locais.</p>
+      </section>
+    </div>
+    <footer><span>IAAUDIO <span class="footer-slash">/</span> VOZ, IDEIAS E DIREÇÃO.</span><span>GRATUITO <i></i> SEM API PAGA</span></footer>
+  </main>
+  <div id="notice" class="notice hidden" role="status"></div>
+</body>
+</html>

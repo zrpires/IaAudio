@@ -2,7 +2,6 @@ import {createRecorder} from './recorder.js';
 import {createLocalTranscriber} from './local-transcriber.js';
 import {createVoiceCapture} from './voice.js';
 const $=s=>document.querySelector(s);
-const money=cents=>(cents/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
 function notify(text){$('#notice').textContent=text;$('#notice').classList.remove('hidden');clearTimeout(window.noticeTimer);window.noticeTimer=setTimeout(()=>$('#notice').classList.add('hidden'),8000);}
 const history=[];let pending=null,conversationVersion=0;

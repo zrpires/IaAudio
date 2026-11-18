@@ -1,3 +1,10 @@
+# Redesign e limpeza
+
+- `npm run check` e os 30 testes passaram.
+- Os testes do cliente agora conferem os seletores contra os IDs do HTML real, evitando que um controle ausente passe despercebido no mock.
+- Removidos estilos e regras de loja/despesas sem uso; preservados os módulos de captura, worker, transcrição local e proteção contra APIs pagas.
+- A prévia local não é acessível ao navegador compartilhado (`ERR_CONNECTION_REFUSED`); inspeção visual deve ocorrer na URL publicada.
+
 # Estado atual — versão gratuita
 
 - `npm run check` aprovado; `npm test`: 30 testes aprovados.
