@@ -20,5 +20,5 @@ self.onmessage=async({data})=>{
   if(type!=='transcribe')throw Error('Solicitação de voz inválida.');
   const output=await transcriber(audio,{language:'portuguese',task:'transcribe',chunk_length_s:25,stride_length_s:5,return_timestamps:false});
   self.postMessage({id,type:'result',text:output.text});
- }catch(error){console.error('Falha no modelo local:',error);self.postMessage({id,type:'error',message:'Não foi possível executar o modelo local. Confira a conexão para baixar os arquivos, tente novamente ou use o texto. Dispositivos com pouca memória podem não executar a transcrição.'});}
+ }catch(error){console.error('Falha no modelo local:',error);self.postMessage({id,type:'error',message:'Não foi possível executar o modelo local. Confira a conexão para baixar os arquivos, tente novamente ou use o texto. Dispositivos com pouca memória podem não executar a transcrição. Detalhe: '+String(error.message||error).slice(0,500)});}
 };
