@@ -4,32 +4,69 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#070d14">
-  <meta name="description" content="Seu centro de comando para estudar. Voz no dispositivo, conversa por texto e planejamento gratuito.">
-  <title>IaAudio — Seu centro de comando</title>
+  <meta name="description" content="Registre reuniões, revise decisões e acompanhe ações. Voz local e workspace gratuito, com backup e atas exportáveis.">
+  <title>Nexo Workspace — da conversa à execução</title>
   <link rel="stylesheet" href="/style.css">
   <script type="module" src="/app.js"></script>
 </head>
 <body>
-  <a class="skip-link" href="#message">Ir para a mensagem</a>
+  <a class="skip-link" href="#main-content">Ir para o conteúdo</a>
   <header class="topbar">
-    <a class="brand" href="/" aria-label="IaAudio, início"><span class="brand-mark" aria-hidden="true">IA<span></span></span><span>Ia<span class="accent">Audio</span><small>PERSONAL VOICE INTERFACE</small></span></a>
+    <a class="brand" href="/" aria-label="Nexo Workspace, início"><span class="brand-mark" aria-hidden="true">NX<span></span></span><span>Nexo<span class="accent">Workspace</span><small>DA CONVERSA À EXECUÇÃO</small></span></a>
     <div class="connection"><span class="status-dot" aria-hidden="true"></span><span id="mode" role="status">Conectando…</span></div>
-    <span class="header-tag">SEU FOCO. SUA FREQUÊNCIA.</span>
+    <span class="header-tag">VOZ · REGISTROS · AÇÕES</span>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
+    <nav class="product-tabs" role="tablist" aria-label="Áreas do Nexo Workspace">
+      <button type="button" id="workspace-tab" role="tab" aria-controls="workspace-screen" aria-selected="true">Workspace <span>Registros e ações</span></button>
+      <button type="button" id="assistant-tab" role="tab" aria-controls="assistant-screen" aria-selected="false" tabindex="-1">Assistente de voz <span>Ditado e estudo</span></button>
+      <span class="local-tag">DADOS NESTE NAVEGADOR</span>
+    </nav>
+    <section id="workspace-screen" role="tabpanel" aria-labelledby="workspace-tab">
+      <div class="page-heading business-heading"><div><p class="eyebrow"><span></span> DA CONVERSA À EXECUÇÃO</p><h1>Decisões registradas.<br><span>Próximos passos claros.</span></h1></div><p class="heading-note">Reuniões, briefings e atendimentos.<br>Um workspace local, sem API paga.</p></div>
+      <div class="business-stats" aria-label="Indicadores de registros ativos">
+        <div><span>REGISTROS ATIVOS</span><strong id="stat-records">0</strong></div><div><span>AÇÕES EM ABERTO</span><strong id="stat-open">0</strong></div><div class="stat-attention"><span>AÇÕES ATRASADAS</span><strong id="stat-overdue">0</strong></div><div><span>CONCLUÍDAS</span><strong id="stat-done">0</strong></div>
+      </div>
+      <p id="demo-notice" class="demo-notice" role="status" hidden></p>
+      <div class="workspace-toolbar"><p id="workspace-storage" class="storage-status" role="status">Carregando registros locais…</p><div class="toolbar-actions"><button type="button" id="reload-workspace" class="button ghost">Recarregar registros</button><button type="button" id="export-actions" class="button secondary">Exportar ações CSV</button><button type="button" id="export-backup" class="button secondary">Baixar backup</button><label class="button secondary file-picker" for="import-backup">Importar backup<input id="import-backup" type="file" accept="application/json,.json" class="visually-hidden"></label><button type="button" id="download-recovery" class="button secondary" hidden>Baixar dados para recuperação</button></div></div>
+      <div id="import-review" class="review-panel" hidden><h2>Revisar importação</h2><p id="import-summary"></p><div><button type="button" id="apply-backup" class="button primary">Mesclar registros novos</button><button type="button" id="cancel-import" class="button ghost">Cancelar importação</button></div></div>
+      <div class="enterprise-grid">
+        <aside class="records-panel panel" aria-labelledby="records-title"><div class="panel-heading"><h2 id="records-title">Seus registros</h2><span id="records-count" class="records-count">0 registros</span></div><div class="records-filters"><button id="new-record" type="button" class="button primary">+ Novo registro</button><label for="record-search">Buscar registro</label><input id="record-search" type="search" placeholder="Título, projeto ou anotação…"><label for="project-filter">Projeto</label><select id="project-filter"><option value="">Todos os projetos</option></select><label for="archive-filter">Exibir</label><select id="archive-filter"><option value="active">Ativos</option><option value="archived">Arquivados</option><option value="all">Todos</option></select></div><div id="records-list" class="records-list"></div><div class="demo-control"><p>Explorando o projeto?</p><button id="load-demo" type="button" class="button secondary">Carregar demonstração</button><small>Adiciona exemplos fictícios, sem substituir seus registros.</small></div></aside>
+        <div class="record-editor panel"><div class="panel-heading editor-heading"><h2 id="editor-title">Novo registro</h2><span id="record-badge" class="record-badge">REGISTRO LOCAL</span></div>
+          <form id="meeting-form" class="record-form">
+            <div class="metadata-grid"><div class="field-full"><label for="record-title">Título do registro *</label><input id="record-title" maxlength="120" required placeholder="Ex.: alinhamento semanal da equipe"></div><div><label for="record-kind">Tipo</label><select id="record-kind"><option value="meeting">Reunião</option><option value="briefing">Briefing</option><option value="service">Atendimento</option></select></div><div><label for="record-date">Data *</label><input id="record-date" type="date" required></div><div><label for="record-project">Projeto ou área</label><input id="record-project" maxlength="80" placeholder="Ex.: Portal do cliente"></div><div><label for="record-participants">Participantes</label><input id="record-participants" maxlength="500" placeholder="Nomes das pessoas presentes"></div></div>
+            <div class="field-heading"><label for="meeting-notes">Anotações e trechos transcritos</label><button id="dictate-notes" type="button" class="button secondary">Ditar com voz gratuita ↗</button></div>
+            <textarea id="meeting-notes" maxlength="16000" rows="8" placeholder="Registre o contexto e os pontos discutidos. Para extração por regras, use uma linha por item:&#10;Decisão: iniciar o piloto com uma equipe.&#10;Ação: preparar o roteiro de testes | Responsável: Ana | Prazo: 2026-12-05"></textarea>
+            <p class="field-help">A voz é adicionada aqui em trechos de até 60 segundos. O ditado não captura uma reunião inteira em segundo plano.</p>
+            <div class="extraction-toolbar"><button id="extract-record" type="button" class="button secondary">Revisar decisões e ações das notas</button><span>Usa apenas os marcadores explícitos “Decisão:” e “Ação:”.</span></div>
+            <div id="extraction-preview" class="review-panel" hidden><h3>Rascunho por regras · revise antes de salvar</h3><ul id="extraction-items"></ul><button id="apply-extraction" type="button" class="button primary">Aplicar rascunho e salvar</button><button id="dismiss-extraction" type="button" class="button ghost">Descartar rascunho</button></div>
+            <label for="record-decisions">Decisões confirmadas · uma por linha</label><textarea id="record-decisions" rows="3" maxlength="25500" placeholder="Escreva ou revise as decisões antes de salvar."></textarea>
+            <div class="record-actions"><button id="save-record" class="button primary">Salvar registro</button><button id="preview-minutes" type="button" class="button secondary">Visualizar ata</button><button id="download-minutes" type="button" class="button secondary">Baixar ata .md</button><button id="archive-record" type="button" class="button ghost">Arquivar registro</button></div>
+          </form>
+          <section class="action-section" aria-labelledby="actions-title"><div class="section-heading"><div><p class="eyebrow">DO REGISTRO À ENTREGA</p><h2 id="actions-title">Plano de ação</h2></div><p>Ações e alterações de status são salvas no navegador.</p></div>
+            <form id="task-form"><div class="metadata-grid"><div class="field-full"><label for="action-title">O que precisa ser feito? *</label><input id="action-title" maxlength="300" required placeholder="Uma entrega clara e verificável"></div><div><label for="action-assignee">Responsável</label><input id="action-assignee" maxlength="80" placeholder="Nome da pessoa"></div><div><label for="action-due">Prazo</label><input id="action-due" type="date"></div><div><label for="action-priority">Prioridade</label><select id="action-priority"><option value="low">Baixa</option><option value="medium" selected>Média</option><option value="high">Alta</option></select></div><div class="task-submit"><button id="save-action" class="button primary">Adicionar ação</button><button id="cancel-action-edit" type="button" class="button ghost" hidden>Cancelar edição</button></div></div></form>
+            <p id="actions-empty" class="empty-state">Nenhuma ação registrada. Defina um responsável e um prazo para acompanhar a execução.</p>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Ações deste registro"><table class="actions-table"><thead><tr><th scope="col">Ação</th><th scope="col">Responsável</th><th scope="col">Prazo</th><th scope="col">Prioridade</th><th scope="col">Status</th><th scope="col">Editar</th></tr></thead><tbody id="actions-body"></tbody></table></div>
+          </section>
+        </div>
+      </div>
+      <p class="workspace-limit">Workspace local para uso individual e pilotos. Não possui login, permissões de equipe ou sincronização. Registros não são criptografados pelo aplicativo; use um perfil de navegador confiável e mantenha backups.</p>
+    </section>
+
+    <section id="assistant-screen" role="tabpanel" aria-labelledby="assistant-tab" hidden>
     <div class="page-heading">
       <div><p class="eyebrow"><span></span> SEU CENTRO DE COMANDO</p><h1>Pense em voz alta.<br><span>Transforme em ação.</span></h1></div>
-      <p class="heading-note">Um tema. Um tempo disponível.<br>Seu próximo bloco de estudo começa aqui.</p>
+      <p class="heading-note">Dite as notas de um registro ou use o<br>planejador de estudo por texto.</p>
     </div>
 
     <div class="workspace">
       <aside class="controls-panel panel" aria-labelledby="settings-title">
-        <div class="panel-heading"><span class="section-index">01</span><h2 id="settings-title">Ajuste a frequência</h2></div>
+        <div class="panel-heading"><span class="section-index">01</span><h2 id="settings-title">Voz e destino</h2></div>
         <div class="control-section">
           <label for="voice-engine">Entrada de voz</label>
           <select id="voice-engine"><option value="local">Voz gratuita no dispositivo</option><option value="native">Reconhecimento do navegador</option></select>
-          <p class="muted">O modo local funciona sem chave, senha ou créditos.</p>
+          <label for="voice-target" class="voice-target-label">Destino da transcrição</label><select id="voice-target"><option value="notes">Anotações do registro</option><option value="message">Mensagem do assistente de estudo</option></select><button id="open-workspace" class="button secondary return-workspace" type="button">Abrir registro ↗</button><p class="muted">O modo local funciona sem chave, senha ou créditos.</p>
         </div>
         <div class="control-section">
           <h3>Saída de áudio</h3>
@@ -48,11 +85,11 @@
       <section class="voice-panel panel" aria-labelledby="voice-title">
         <div class="panel-heading"><span class="section-index">02</span><h2 id="voice-title">Conecte suas ideias</h2><span class="live-tag">VOZ / TEXTO</span></div>
         <div class="core-stage">
-          <span class="core-coordinate coordinate-top" aria-hidden="true">IAAUDIO / VOICE CORE</span>
+          <span class="core-coordinate coordinate-top" aria-hidden="true">NEXO / VOICE CORE</span>
           <div id="orb" class="voice-orb" aria-hidden="true">
             <svg class="core-grid" viewBox="0 0 320 320" fill="none"><circle cx="160" cy="160" r="148" stroke-dasharray="1 10"/><circle class="outer-arc" cx="160" cy="160" r="133" stroke-dasharray="180 32 64 32"/><circle cx="160" cy="160" r="113" stroke-dasharray="3 5"/><circle class="inner-arc" cx="160" cy="160" r="97" stroke-dasharray="230 40"/><path d="M160 0v24m0 272v24M0 160h24m272 0h24"/></svg>
             <div class="core-halo"></div>
-            <div class="core-heart"><span class="core-monogram">IA<span>Audio</span></span><div class="waveform"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+            <div class="core-heart"><span class="core-monogram">NX<span>NEXO</span></span><div class="waveform"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
           </div>
           <span class="core-coordinate coordinate-bottom" aria-hidden="true">PRIVACIDADE EM PRIMEIRO PLANO</span>
         </div>
@@ -79,7 +116,9 @@
         <p class="session-note">A conversa dura enquanto esta aba estiver aberta. O roteiro usa regras locais.</p>
       </section>
     </div>
-    <footer><span>IAAUDIO <span class="footer-slash">/</span> VOZ, IDEIAS E DIREÇÃO.</span><span>GRATUITO <i></i> SEM API PAGA</span></footer>
+    </section>
+    <dialog id="minutes-dialog" class="minutes-dialog" aria-labelledby="minutes-title"><div class="dialog-heading"><h2 id="minutes-title">Prévia da ata</h2><button id="close-minutes" type="button" class="button secondary">Fechar</button></div><p>Confira o conteúdo com os participantes antes de compartilhar. Use Baixar ata no registro para exportar.</p><pre id="minutes-content"></pre><button id="copy-minutes" type="button" class="button primary">Copiar ata</button></dialog>
+    <footer><span>NEXO WORKSPACE <span class="footer-slash">/</span> DA CONVERSA À EXECUÇÃO.</span><span>GRATUITO <i></i> SEM API PAGA</span></footer>
   </main>
   <div id="notice" class="notice hidden" role="status"></div>
 </body>

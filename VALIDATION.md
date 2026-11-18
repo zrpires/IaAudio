@@ -1,3 +1,14 @@
+# Nexo Workspace — versão 2.0
+
+- Novo nome, registros por projeto, decisões revisáveis, ações com responsável/prazo/prioridade/status, indicadores, arquivamento, atas, CSV e backups.
+- `npm run check` valida 18 arquivos; `npm test`: 45 testes aprovados.
+- Testes novos cobrem validação do domínio, idempotência da extração, indicadores, persistência, corrupção, quota, conflitos entre abas, mesclagem de backup e proteção do CSV.
+- Ditado para anotações e ausência de upload de áudio continuam cobertos por testes do cliente com captura simulada.
+- Nenhum backend de contas, banco compartilhado ou colaboração foi implementado; dados persistem apenas neste navegador.
+- Verificação de interface real desta versão pendente antes da conclusão da entrega.
+
+## Histórico anterior
+
 # Redesign e limpeza
 
 - `npm run check` e os 30 testes passaram.

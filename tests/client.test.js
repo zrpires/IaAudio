@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {createVoiceCapture} from '../public/voice.js';
 import {createRecorder} from '../public/recorder.js';
 import {readFileSync} from 'node:fs';
-const code=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace("import {createVoiceCapture} from './voice.js';",'').replace("import {createRecorder} from './recorder.js';",'').replace("import {createLocalTranscriber} from './local-transcriber.js';",'');
+const code=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace("import {initWorkspace} from './workspace-ui.js';",'').replace("import {createVoiceCapture} from './voice.js';",'').replace("import {createRecorder} from './recorder.js';",'').replace("import {createLocalTranscriber} from './local-transcriber.js';",'');
 const markup=readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
 const interfaceIds=new Set([...markup.matchAll(/id="([^"]+)"/g)].map(match=>'#'+match[1]));
 function setup({voice=true,chat,recording=false}={}){
@@ -17,7 +17,7 @@ function setup({voice=true,chat,recording=false}={}){
  const synth={cancel(){},getVoices(){return [{lang:'pt-BR'}];},speak(u){synth.last=u;}};
  class Recorder{static isTypeSupported(m){return m==='audio/mp4';}constructor(){this.state='inactive';this.mimeType='audio/mp4';}start(){this.state='recording';}stop(){this.state='inactive';this.ondataavailable({data:new Blob(['audio'])});this.onstop();}}
  const window={...(recording?{MediaRecorder:Recorder,navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}}}:{}),setTimeout:()=>0,clearTimeout(){},isSecureContext:true,addEventListener(){},speechSynthesis:synth,...(voice?{SpeechRecognition:Recognition}:{})};
- const context=vm.createContext({createRecorder:options=>createRecorder({...options,host:window}),createLocalTranscriber:()=>{let ready=false;return {supported:recording,get ready(){return ready;},prepare:async()=>{ready=true;},transcribe:async()=> 'Java por 30 minutos',cancel(){}};},createVoiceCapture:options=>createVoiceCapture({...options,host:window}),window,document:{querySelector:get,createElement:node},speechSynthesis:synth,SpeechSynthesisUtterance:class{constructor(text){this.text=text;}},AbortController,AbortSignal,setTimeout:()=>0,clearTimeout(){},fetch:async(path,options)=>path==='/api/health'?{ok:true,json:async()=>({mode:'local',aiReady:true,transcriptionReady:recording})}:chat?chat(path,options):{ok:true,json:async()=>({reply:'Seu plano',mode:'local'})}});
+ const context=vm.createContext({initWorkspace:()=>{},createRecorder:options=>createRecorder({...options,host:window}),createLocalTranscriber:()=>{let ready=false;return {supported:recording,get ready(){return ready;},prepare:async()=>{ready=true;},transcribe:async()=> 'Java por 30 minutos',cancel(){}};},createVoiceCapture:options=>createVoiceCapture({...options,host:window}),window,document:{querySelector:get,createElement:node},speechSynthesis:synth,SpeechSynthesisUtterance:class{constructor(text){this.text=text;}},AbortController,AbortSignal,setTimeout:()=>0,clearTimeout(){},fetch:async(path,options)=>path==='/api/health'?{ok:true,json:async()=>({mode:'local',aiReady:true,transcriptionReady:recording})}:chat?chat(path,options):{ok:true,json:async()=>({reply:'Seu plano',mode:'local'})}});
  vm.runInContext(code,context);
  return {get,window,synth,get recognition(){return recognition;},submit:()=>get('#chat-form').events.submit({preventDefault(){}})};
 }
@@ -53,4 +53,7 @@ test('free device recording transcribes without uploading audio or asking for a 
  assert.equal(app.get('#mic').textContent,'Finalizar gravação');app.get('#mic').onclick();await new Promise(r=>setImmediate(r));
  assert.equal(app.get('#message').value,'Java por 30 minutos');assert.equal(calls.length,0);
  await app.submit();assert.equal(calls.length,1);assert.equal(calls[0].path,'/api/chat');assert.equal(calls[0].data.message,'Java por 30 minutos');
+});
+test('dictation can target meeting notes without sending them to the study chat',()=>{
+ const app=setup();app.get('#voice-target').value='notes';app.get('#meeting-notes').value='Contexto da reunião:';app.get('#message').value='Rascunho do estudo';app.get('#mic').onclick();const result=[{transcript:'validar o piloto'}];result.isFinal=true;app.recognition.onresult({results:[result]});assert.equal(app.get('#meeting-notes').value,'Contexto da reunião: validar o piloto');assert.equal(app.get('#message').value,'Rascunho do estudo');
 });

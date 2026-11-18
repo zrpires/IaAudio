@@ -1,3 +1,4 @@
+import {initWorkspace} from './workspace-ui.js';
 import {createRecorder} from './recorder.js';
 import {createLocalTranscriber} from './local-transcriber.js';
 import {createVoiceCapture} from './voice.js';
@@ -23,7 +24,7 @@ $('#chat-form').addEventListener('submit',async event=>{
     if(typeof result.reply!=='string'||!result.reply.trim())throw Error('Resposta vazia. Tente novamente.');
     bubble(result.reply);history.push({role:'user',content:message},{role:'assistant',content:result.reply});
     if(history.length>8)history.splice(0,history.length-8);
-    $('#mode').textContent='Gratuito · planejador local';
+    $('#mode').textContent='Gratuito · workspace local';
     window.speakReply(result.reply);
   }catch(e){
     if(version!==conversationVersion||controller.signal.aborted)return;
@@ -31,7 +32,7 @@ $('#chat-form').addEventListener('submit',async event=>{
     else notify('Falha no envio. Sua nova mensagem foi preservada; a anterior está na conversa.');
   }finally{if(pending===controller){pending=null;busy(false);}}
 });
-async function loadHealth(){try{await api('/api/health');$('#mode').textContent='Gratuito · planejador local';}catch(e){$('#mode').textContent='Sem conexão';notify(e.message);}}
+async function loadHealth(){try{await api('/api/health');$('#mode').textContent='Gratuito · workspace local';}catch(e){$('#mode').textContent='Sem conexão';notify(e.message);}}
 loadHealth();
 let lastReply='';
 const synth=window.speechSynthesis;
@@ -52,9 +53,14 @@ $('#speak').onchange=()=>{if(!$('#speak').checked&&synth)synth.cancel();};
 if(!synth){$('#speak').disabled=true;$('#speech-status').textContent='Leitura indisponível neste navegador. Use as respostas em texto.';}
 let voiceState='idle',recorderState='idle';
 function appendTranscript(text){
- const field=$('#message'),combined=(field.value.trim()+' '+text).trim();
- if(combined.length>2000)throw Error('O texto excedeu 2000 caracteres. Envie o rascunho antes de gravar novamente.');
- field.value=combined;field.focus();
+ const notes=$('#voice-target').value==='notes';
+ const field=notes?$('#meeting-notes'):$('#message'),limit=notes?16000:2000;
+ const combined=(field.value.trim()+' '+text).trim();
+ if(combined.length>limit)throw Error(`O destino excedeu ${limit} caracteres. Salve ou envie o conteúdo antes de continuar.`);
+ field.value=combined;
+ if(field.dispatchEvent)field.dispatchEvent(new Event('input',{bubbles:true}));
+ if(!notes)field.focus();
+ return notes;
 }
 function localMode(){return $('#voice-engine').value==='local';}
 function recorderUI({state,message,supported}){
@@ -74,9 +80,8 @@ const nativeVoice=createVoiceCapture({
   onInterim:text=>{$('#transcript-preview').textContent=text?'Ouvindo: '+text:'';},
   onFinal:text=>{
     if(pending)return;
-    const field=$('#message'),combined=(field.value.trim()+' '+text).trim();
-    if(combined.length>2000){$('#transcript-preview').textContent='';notify('O texto excedeu 2000 caracteres. Envie seu rascunho antes de continuar a ditar.');return;}
-    field.value=combined;field.focus();notify('Transcrição adicionada. Revise o texto e clique em Enviar.');
+    try{const notes=appendTranscript(text);notify(notes?'Transcrição adicionada às anotações. Abra o registro para revisar e salvar.':'Transcrição adicionada. Revise e envie.');}
+    catch(error){notify(error.message);}
   }
 });
 const local=createLocalTranscriber({onProgress:event=>{
@@ -86,7 +91,7 @@ const local=createLocalTranscriber({onProgress:event=>{
 }});
 const recorder=createRecorder({onState:recorderUI,onAudio:async(blob,signal)=>{
  const text=await local.transcribe(blob,signal);if(signal.aborted)return;
- appendTranscript(text);notify('Transcrição local adicionada. Revise antes de enviar.');
+ const notes=appendTranscript(text);notify(notes?'Transcrição adicionada às anotações. Abra o registro para revisar e salvar.':'Transcrição local adicionada. Revise antes de enviar.');
 }});
 const voice={cancel(){nativeVoice.cancel();recorder.cancel();local.cancel();$('#prepare-local').disabled=false;refreshVoice();}};
 function refreshVoice(){
@@ -126,3 +131,5 @@ window.addEventListener('pagehide',()=>{voice.cancel();synth?.cancel();});
 $('#clear').onclick=()=>{conversationVersion++;pending?.abort();pending=null;busy(false);$('#message').value='';$('#speech-status').textContent='';if('speechSynthesis'in window)speechSynthesis.cancel();$('#messages').replaceChildren();history.length=0;lastReply='';$('#replay').disabled=true;voice.cancel();notify('Conversa apagada desta tela.');};
 $('#download').onclick=()=>{const blob=new Blob([$('#messages').innerText],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='conversa.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 
+
+initWorkspace({document,host:window,notify});

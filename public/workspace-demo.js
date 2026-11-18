@@ -1,0 +1,7 @@
+import {newRecord,todayLocal,emptySnapshot} from './workspace-model.js';
+export function demoSnapshot(clock=()=>new Date()){
+ const now=clock(),after=new Date(now),before=new Date(now);after.setDate(after.getDate()+3);before.setDate(before.getDate()-1);
+ const first={...newRecord({clock:()=>now,idFactory:()=> 'demo_sprint'}),title:'Alinhamento de entrega — exemplo',project:'Portal do cliente (exemplo)',participants:'Ana e Bruno — personagens fictícios',demo:true,notes:'Objetivo: revisar o piloto do portal.\nDecisão: testar primeiro com uma equipe pequena.\nAção: preparar o roteiro de testes | Responsável: Ana (exemplo) | Prazo: '+todayLocal(after),decisions:['Testar primeiro com uma equipe pequena.'],actions:[{id:'demo_testes',title:'Preparar o roteiro de testes',assignee:'Ana (exemplo)',due:todayLocal(after),priority:'high',status:'doing'},{id:'demo_acesso',title:'Validar os perfis de acesso',assignee:'Bruno (exemplo)',due:todayLocal(before),priority:'high',status:'todo'}]};
+ const second={...newRecord({clock:()=>now,idFactory:()=> 'demo_briefing'}),title:'Briefing de onboarding — exemplo',kind:'briefing',project:'Operação (exemplo)',participants:'Equipe fictícia',demo:true,notes:'Exemplo de registro para demonstrar o fluxo. Nenhum dado de cliente real.',decisions:['Concentrar as dúvidas em um único documento.'],actions:[{id:'demo_manual',title:'Revisar o manual de boas-vindas',assignee:'Equipe (exemplo)',due:todayLocal(now),priority:'medium',status:'done'}]};
+ return {...emptySnapshot(),records:[first,second]};
+}
