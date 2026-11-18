@@ -2,7 +2,7 @@
 let pipelinePromise;
 async function getPipeline(id){
  if(!pipelinePromise)pipelinePromise=(async()=>{
-  const {pipeline,env}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/transformers.web.min.js');
+  const {pipeline,env}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/transformers.min.js');
   env.allowLocalModels=false;env.useBrowserCache=true;
   env.backends.onnx.wasm.numThreads=1;env.backends.onnx.wasm.proxy=false;
   env.backends.onnx.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/';
