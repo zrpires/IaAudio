@@ -5,7 +5,11 @@
 - Testes novos cobrem validação do domínio, idempotência da extração, indicadores, persistência, corrupção, quota, conflitos entre abas, mesclagem de backup e proteção do CSV.
 - Ditado para anotações e ausência de upload de áudio continuam cobertos por testes do cliente com captura simulada.
 - Nenhum backend de contas, banco compartilhado ou colaboração foi implementado; dados persistem apenas neste navegador.
-- Verificação de interface real desta versão pendente antes da conclusão da entrega.
+- Interface real validada na URL publicada: carregamento dos exemplos fictícios, prévia e aplicação da extração sem duplicar itens, mudança de status e atualização dos indicadores.
+- Criação de ação e persistência após recarregar confirmadas no navegador. Arquivamento e restauração confirmados.
+- Downloads reais de CSV e backup concluídos. O mesmo backup foi reaberto, revisado e mesclado pela interface: 0 novos e 2 existentes preservados, sem perda das 3 ações do registro em teste.
+- Modelo de voz carregado de verdade na aba Assistente; destino Anotações do registro confirmado. Nova captura física não foi repetida neste teste.
+- Layout desktop inspecionado sem rolagem horizontal (viewport e conteúdo: 1348 px). Dispositivo móvel físico não foi testado nesta revisão.
 
 ## Histórico anterior
 
