@@ -119,3 +119,17 @@ Para IA generativa: copie `.env.example` para `.env`, preencha `OPENAI_API_KEY` 
 Correções de confiabilidade: limpar cancela a solicitação pendente e ignora respostas antigas; falhas de envio preservam um novo rascunho; não há dois envios simultâneos; microfone não inicia enquanto o chat responde; respostas inválidas do provedor recebem erro legível. Porta ocupada mostra orientação para definir PORT no `.env`.
 
 Verificação atual: `npm run check` e `npm test` (14 testes). Inclui servidor HTTP real, fluxo de texto com voz indisponível, transcrição e reprodução simuladas, cancelamento e preservação de rascunho. A voz real continua dependendo das permissões e serviços do dispositivo. O projeto não agenda lembretes nem salva sessões após recarregar.
+
+
+## Captura de voz atualizada
+
+1. Abra a aplicação por HTTPS ou `localhost`, preferencialmente em Chrome/Edge atualizado.
+2. Clique em **Ativar microfone** e autorize o acesso ao microfone para este site.
+3. Diga, por exemplo, “Quero estudar Java por 30 minutos”. A fala provisória aparece perto do microfone; os trechos finalizados são acrescentados ao campo de mensagem sem apagar o rascunho.
+4. Aguarde a finalização automática ou clique em **Finalizar escuta**. Revise a transcrição e clique em **Enviar mensagem**.
+
+**Cancelar escuta** interrompe a espera por permissão. **Parar áudio** finaliza a captura para aproveitar a transcrição pendente e interrompe a leitura. Limpar a conversa descarta os resultados atrasados. Cada clique para iniciar cria uma tentativa independente; não há escuta em segundo plano nem reinício automático. A captura é limitada a 60 segundos por tentativa.
+
+Se a permissão ficar pendente por mais de 15 segundos, confira o ícone de permissões na barra de endereço e tente novamente. Em caso de microfone ocupado, conecte outro dispositivo ou feche o aplicativo que o utiliza. Erros de rede podem indicar indisponibilidade do serviço de reconhecimento do navegador: a chave OpenAI não corrige esse serviço. A captura nativa não requer chave OpenAI; não há transcrição no servidor como alternativa nesta versão. Firefox e outros navegadores sem SpeechRecognition continuam com entrada por texto.
+
+Validação: 20 testes automatizados, incluindo resultados múltiplos, duplicados, eventos atrasados, prévia provisória, permissão negada, falta de microfone, erro de rede, timeouts e tentativa seguinte. Esses testes simulam o reconhecedor: não comprovam a qualidade da transcrição de um microfone físico.

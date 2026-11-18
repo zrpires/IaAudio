@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {createVoiceCapture} from '../public/voice.js';
 import {readFileSync} from 'node:fs';
-const code=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+const code=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace("import {createVoiceCapture} from './voice.js';",'');
 function setup({voice=true,chat}={}){
  const nodes=new Map();
  function node(){return {value:'',textContent:'',checked:false,disabled:false,children:[],events:{},classList:{add(){},remove(){}},setAttribute(){},focus(){},append(n){this.children.push(n);},replaceChildren(){this.children=[];},addEventListener(k,v){this.events[k]=v;}};}
@@ -10,8 +11,8 @@ function setup({voice=true,chat}={}){
  let recognition;
  class Recognition{constructor(){recognition=this;}start(){this.onstart();}stop(){this.onend();}abort(){this.onend?.();}}
  const synth={cancel(){},getVoices(){return [{lang:'pt-BR'}];},speak(u){synth.last=u;}};
- const window={isSecureContext:true,addEventListener(){},speechSynthesis:synth,...(voice?{SpeechRecognition:Recognition}:{})};
- const context=vm.createContext({window,document:{querySelector:get,createElement:node},speechSynthesis:synth,SpeechSynthesisUtterance:class{constructor(text){this.text=text;}},AbortController,AbortSignal,setTimeout:()=>0,clearTimeout(){},sessionStorage:{getItem:()=>''},fetch:async(path,options)=>path==='/api/health'?{ok:true,json:async()=>({mode:'local',aiReady:true})}:chat?chat(path,options):{ok:true,json:async()=>({reply:'Seu plano',mode:'local'})}});
+ const window={setTimeout:()=>0,clearTimeout(){},isSecureContext:true,addEventListener(){},speechSynthesis:synth,...(voice?{SpeechRecognition:Recognition}:{})};
+ const context=vm.createContext({createVoiceCapture:options=>createVoiceCapture({...options,host:window}),window,document:{querySelector:get,createElement:node},speechSynthesis:synth,SpeechSynthesisUtterance:class{constructor(text){this.text=text;}},AbortController,AbortSignal,setTimeout:()=>0,clearTimeout(){},sessionStorage:{getItem:()=>''},fetch:async(path,options)=>path==='/api/health'?{ok:true,json:async()=>({mode:'local',aiReady:true})}:chat?chat(path,options):{ok:true,json:async()=>({reply:'Seu plano',mode:'local'})}});
  vm.runInContext(code,context);
  return {get,window,synth,get recognition(){return recognition;},submit:()=>get('#chat-form').events.submit({preventDefault(){}})};
 }
@@ -23,7 +24,7 @@ test('text flow works without speech recognition and supports replay',async()=>{
 });
 test('transcription preserves draft and microphone error survives onend',()=>{
  const app=setup();app.get('#message').value='Quero estudar';app.get('#mic').onclick();
- app.recognition.onresult({results:[[{transcript:'Java por 30 minutos'}]]});
+ const result=[{transcript:'Java por 30 minutos'}];result.isFinal=true;app.recognition.onresult({results:[result]});
  assert.equal(app.get('#message').value,'Quero estudar Java por 30 minutos');
  app.recognition.onerror({error:'not-allowed'});app.recognition.onend();
  assert.match(app.get('#voice-status').textContent,/bloqueado/);

@@ -30,3 +30,11 @@ A interface de acesso protegido à IA também foi verificada no navegador, com r
 - Frontend executado em ambiente DOM simulado: texto sem reconhecimento, reprodução, transcrição sem perda de rascunho, erro de permissão, limpeza durante requisição e falha durante novo rascunho.
 - Instalação do Chromium tentada; download não forneceu um ZIP válido. Layout móvel e áudio físico não puderam ser confirmados nesta execução.
 - IA externa testada com mocks, sem chave real ou cobrança. Configuração e execução final na conta Vercel dependem das variáveis do proprietário.
+
+
+## Revisão da captura de voz
+
+- `npm run check` inclui o novo módulo `public/voice.js`.
+- `npm test`: 20 testes aprovados. Cobertura de controle da captura com reconhecedor simulado, fluxo do chat e servidor HTTP real.
+- Tentativa de teste Playwright com `/usr/bin/chromium` bloqueada pelo executor: `socket() failed: Operation not permitted`, antes de abrir o navegador. Nenhum teste de voz física foi realizado.
+- Não se afirma transcrição física validada: a API nativa depende de HTTPS, permissão, microfone e serviço externo do navegador. Não foram adicionadas credenciais ou transcrição paga.

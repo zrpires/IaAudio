@@ -1,3 +1,4 @@
+import {createVoiceCapture} from './voice.js';
 const $=s=>document.querySelector(s);
 const money=cents=>(cents/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
@@ -16,7 +17,7 @@ $('#chat-form').addEventListener('submit',async event=>{
   event.preventDefault();if(pending)return;
   const message=$('#message').value.trim();if(!message)return;
   const version=conversationVersion,controller=new AbortController();pending=controller;busy(true);
-  recognition?.abort();synth?.cancel();bubble(message,'user');$('#message').value='';
+  voice.cancel();synth?.cancel();bubble(message,'user');$('#message').value='';
   try{
     const result=await api('/api/chat',{message,history:history.slice(-8)},controller.signal);
     if(version!==conversationVersion)return;
@@ -33,8 +34,7 @@ $('#chat-form').addEventListener('submit',async event=>{
 });
 async function loadHealth(){try{health=await api('/api/health');$('#mode').textContent=health.mode==='local'?'Assistente local · sem IA generativa':health.aiReady?'IA configurada':'IA aguardando configuração';if(health.authRequired)$('#access').classList.remove('hidden');if(health.mode!=='local'&&!health.aiReady)notify('O dono do projeto precisa configurar APP_PASSWORD na Vercel.');}catch(e){$('#mode').textContent='Sem conexão';notify(e.message);}}
 loadHealth();
-const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-let recognition,listening=false,starting=false,voiceError='',lastReply='';
+let lastReply='';
 const synth=window.speechSynthesis;
 function speak(text){
   if(!synth)return;
@@ -48,28 +48,35 @@ function speak(text){
   synth.speak(utterance);
 }
 window.speakReply=text=>{lastReply=text;$('#replay').disabled=!synth;if($('#speak').checked)speak(text);};
-$('#replay').onclick=()=>{recognition?.abort();speak(lastReply);};
+$('#replay').onclick=()=>{voice.cancel();speak(lastReply);};
 $('#speak').onchange=()=>{if(!$('#speak').checked&&synth)synth.cancel();};
 if(!synth){$('#speak').disabled=true;$('#speech-status').textContent='Leitura indisponível neste navegador. Use as respostas em texto.';}
-const voiceErrors={
-  'not-allowed':'Microfone bloqueado. Permita o acesso nas configurações do navegador ou digite.',
-  'service-not-allowed':'Serviço de reconhecimento bloqueado. Use o texto.',
-  'audio-capture':'Nenhum microfone disponível. Conecte um dispositivo ou digite.',
-  'no-speech':'Não ouvi uma fala. Tente novamente ou digite.',
-  'network':'O serviço de voz está sem conexão. Tente novamente ou digite.',
-  'aborted':'Escuta cancelada. Você pode continuar por texto.'
+let voiceState='idle';
+const voice=createVoiceCapture({
+  onState:({state,message,supported})=>{
+    voiceState=state;$('#voice-status').textContent=message;
+    $('#mic').disabled=!supported||state==='stopping';
+    $('#mic').setAttribute('aria-pressed',String(state==='starting'||state==='listening'));
+    $('#mic').textContent=state==='starting'?'Cancelar escuta':state==='listening'?'Finalizar escuta':'Ativar microfone';
+    $('#orb').classList[state==='listening'?'add':'remove']('active');
+  },
+  onInterim:text=>{$('#transcript-preview').textContent=text?'Ouvindo: '+text:'';},
+  onFinal:text=>{
+    if(pending)return;
+    const field=$('#message'),combined=(field.value.trim()+' '+text).trim();
+    if(combined.length>2000){$('#transcript-preview').textContent='';notify('O texto excedeu 2000 caracteres. Envie seu rascunho antes de continuar a ditar.');return;}
+    field.value=combined;field.focus();notify('Transcrição adicionada. Revise o texto e clique em Enviar.');
+  }
+});
+$('#mic').onclick=()=>{
+  if(pending){notify('Aguarde a resposta antes de iniciar outra escuta.');return;}
+  if(voiceState==='starting'){voice.cancel();return;}
+  if(voice.active){voice.stop();return;}
+  synth?.cancel();voice.start();
 };
-if(Recognition&&window.isSecureContext){
-  recognition=new Recognition();recognition.lang='pt-BR';recognition.interimResults=false;recognition.continuous=false;
-  recognition.onstart=()=>{starting=false;listening=true;$('#mic').disabled=false;$('#mic').setAttribute('aria-pressed','true');$('#orb').classList.add('active');$('#mic').textContent='Parar escuta';$('#voice-status').textContent='Escutando…';};
-  recognition.onend=()=>{starting=false;listening=false;$('#mic').disabled=false;$('#mic').setAttribute('aria-pressed','false');$('#orb').classList.remove('active');$('#mic').textContent='Ativar microfone';$('#voice-status').textContent=voiceError||'Pronto para ouvir';};
-  recognition.onresult=e=>{if(pending)return;const transcript=e.results?.[0]?.[0]?.transcript;if(!transcript)return;const field=$('#message');field.value=(field.value.trim()+' '+transcript).trim().slice(0,2000);field.focus();notify('Revise a transcrição e clique em Enviar.');};
-  recognition.onerror=e=>{voiceError=voiceErrors[e.error]||'Falha no reconhecimento. Continue por texto.';$('#voice-status').textContent=voiceError;notify(voiceError);};
-  $('#mic').onclick=()=>{try{if(pending){notify('Aguarde a resposta antes de iniciar outra escuta.');return;}if(listening){recognition.stop();return;}if(starting)return;synth?.cancel();voiceError='';starting=true;$('#mic').disabled=true;$('#voice-status').textContent='Aguardando permissão do microfone…';recognition.start();}catch{starting=false;$('#mic').disabled=false;notify('Não foi possível iniciar. Tente novamente ou digite.');}};
-}else{$('#mic').disabled=true;$('#voice-status').textContent='Reconhecimento indisponível neste navegador ou conexão. Use o campo de texto.';}
-$('#stop').onclick=()=>{if(recognition&&(listening||starting))recognition.abort();synth?.cancel();$('#speech-status').textContent='Áudio interrompido.';};
+$('#stop').onclick=()=>{voice.stop();synth?.cancel();$('#speech-status').textContent='Áudio interrompido.';};
 $('#example').onclick=()=>{$('#message').value='Quero estudar arrays em Java por 30 minutos';$('#message').focus();};
-window.addEventListener('pagehide',()=>{recognition?.abort();synth?.cancel();});
-$('#clear').onclick=()=>{conversationVersion++;pending?.abort();pending=null;busy(false);$('#message').value='';$('#speech-status').textContent='';if('speechSynthesis'in window)speechSynthesis.cancel();$('#messages').replaceChildren();history.length=0;lastReply='';$('#replay').disabled=true;recognition?.abort();notify('Conversa apagada desta tela.');};
+window.addEventListener('pagehide',()=>{voice.cancel();synth?.cancel();});
+$('#clear').onclick=()=>{conversationVersion++;pending?.abort();pending=null;busy(false);$('#message').value='';$('#speech-status').textContent='';if('speechSynthesis'in window)speechSynthesis.cancel();$('#messages').replaceChildren();history.length=0;lastReply='';$('#replay').disabled=true;voice.cancel();notify('Conversa apagada desta tela.');};
 $('#download').onclick=()=>{const blob=new Blob([$('#messages').innerText],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='conversa.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 
