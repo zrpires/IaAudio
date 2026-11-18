@@ -23,7 +23,7 @@ export function createRecorder({host=window,onState,onAudio,timers=host}){
     s.stopped=true;release(s);if(current!==s)return;
     const blob=new Blob(s.chunks,{type:recorder.mimeType||mime});s.chunks=[];
     if(!blob.size){current=null;publish('error','Gravação vazia. Tente novamente.');return;}
-    publish('transcribing','Transcrevendo no servidor…');
+    publish('transcribing','Transcrevendo gratuitamente neste dispositivo…');
     try{await onAudio(blob,s.controller.signal);if(current===s){current=null;publish('idle','Transcrição pronta. Revise o texto e envie.');}}
     catch(e){if(current===s){current=null;publish('error',e.message||'Não foi possível transcrever. Tente novamente.');}}
    };
@@ -33,4 +33,3 @@ export function createRecorder({host=window,onState,onAudio,timers=host}){
  publish('idle',supported?'Gravação compatível disponível.':'Gravação indisponível. Use HTTPS, permita o microfone ou digite.');
  return {supported,start,stop,cancel,get active(){return Boolean(current);}};
 }
-export function blobToBase64(blob,host=window){return new Promise((resolve,reject)=>{const reader=new host.FileReader();reader.onerror=()=>reject(Error('Falha ao ler o áudio.'));reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.readAsDataURL(blob);});}

@@ -1,109 +1,10 @@
-# IaAudio
+# IaAudio — gratuito, sem API paga
 
-Aplicativo web independente pronto para importação na Vercel. Interface em português, arquivos estáticos em `public/` e funções Node.js em `api/`. Não usa Python, SQLite ou disco persistente no servidor.
+Assistente de sessões de estudo com voz e texto. Exemplo: **“Quero estudar arrays em Java por 30 minutos”**. O planejador divide o tempo em compreensão, prática e revisão usando regras locais. Não é um chatbot generativo e não corrige exercícios automaticamente.
 
-## Publicar na Vercel
+## Rodar no computador
 
-1. Abra [New Project](https://vercel.com/new) e importe `zrpires/IaAudio`.
-2. **Root Directory:** raiz do repositório. **Framework Preset:** Other. **Node.js:** 22.x.
-3. Mantenha **Build Command desativado/vazio**. **Output Directory:** `public` (já definido em `vercel.json`). Instalação: `npm ci` (ou padrão da Vercel).
-4. Clique em Deploy. O aplicativo já abre e suas funções locais ficam utilizáveis, sem chave de IA.
-5. Para IA generativa, configure as variáveis abaixo em Settings → Environment Variables e faça **Redeploy**. Configure separadamente em Production e Preview se usar ambos.
-
-Não há etapa de build ou servidor que precise permanecer rodando. As rotas `/api/*` usam Vercel Functions. Não faça upload apenas da pasta `public`: importe o repositório inteiro para incluir as funções.
-
-## Funcionalidades
-
-- Conversa por texto com histórico de até oito mensagens enviado à IA.
-- Reconhecimento de fala em pt-BR, com revisão antes de enviar.
-- Leitura das respostas, parada de áudio e exportação da conversa.
-- Alternativa por texto caso o navegador não suporte o microfone.
-
-## IA generativa opcional
-
-| Variável | Uso |
-| --- | --- |
-| `OPENAI_API_KEY` | Sua chave OpenAI com saldo/acesso à API |
-| `OPENAI_MODEL` | Modelo disponível na sua conta; padrão `gpt-4.1-mini` |
-| `APP_PASSWORD` | Senha forte para liberar chamadas pagas de IA |
-
-**Sem chave:** a interface mostra “Assistente local · sem IA generativa” e responde por regras locais. Não finge ser um modelo. **Com chave:** `APP_PASSWORD` é obrigatório para evitar expor uma API paga sem controle de acesso. Digite essa senha na seção “Acesso à IA” do aplicativo; ela fica em `sessionStorage` nesta aba. Não a publique no código, não use prefixo `NEXT_PUBLIC_` e não compartilhe uma senha pessoal reutilizada. Se alguém já souber a senha, poderá usar sua API; troque a variável e faça Redeploy para revogar o acesso. Para uso público em escala, implemente contas e limites de consumo por usuário. A senha protege o uso pago da IA; não é um sistema de usuários ou proteção dos arquivos públicos.
-
-A chave OpenAI nunca vai para o navegador. As chamadas podem gerar custos. Configure limites de gasto na conta OpenAI. O provedor aplica suas próprias políticas de dados. Erros de saldo, chave, conexão e modelo aparecem na tela sem revelar segredos.
-
-## Microfone e voz
-
-Use Chrome/Edge atualizado em HTTPS (a Vercel fornece HTTPS) ou localhost, e permita acesso ao microfone. A Web Speech API varia entre navegadores; quando não disponível, o chat por texto continua funcionando. O reconhecimento pode enviar áudio ao serviço do navegador; no modo nativo o aplicativo não recebe o áudio; no modo gravação ele é enviado ao servidor e à OpenAI para transcrição. A transcrição aparece para revisão, e só é enviada ao clicar em Enviar. A leitura depende das vozes instaladas no dispositivo.
-
-O chat guarda as mensagens somente na aba. Recarregar a página ou fechar a aba apaga a conversa; exporte antes. Ao usar IA, sua mensagem e até oito mensagens de histórico são enviadas à OpenAI. Não há telefonia, WhatsApp ou chamadas em segundo plano.
-
-## Executar no computador
-
-Requer **Node.js 22.x** e npm. Sem dependências externas em runtime.
-
-```bash
-git clone https://github.com/zrpires/IaAudio.git
-cd IaAudio
-npm ci
-cp .env.example .env
-npm run dev
-```
-
-Abra http://localhost:3000. No Windows, copie `.env.example` para `.env` pelo Explorer ou `Copy-Item .env.example .env` no PowerShell. Edite `.env` para configurar serviços opcionais. Nunca faça commit dele. Para rodar mais de um projeto, use `PORT` diferente em cada `.env`.
-
-## Verificação
-
-```bash
-npm run check
-npm test
-```
-
-Testes de rotas HTTP, validação, modo local, autenticação, falhas de provedores e integração simulada com OpenAI. O GitHub Actions executa os testes a cada push/pull request. Testes simulados não substituem uma compra de teste na sua conta nem o teste do microfone no seu dispositivo.
-
-## Estrutura
-
-- `public/`: interface e estado do navegador.
-- `api/`: funções serverless.
-- `lib/`: regras, segurança e integração com serviços.
-- `dev.mjs`: servidor apenas para desenvolvimento local.
-- `vercel.json`: configuração de deploy e cabeçalhos de segurança.
-- `.env.example`: variáveis disponíveis, sem credenciais.
-
-As respostas de API usam `no-store`. Requisições de outra origem são recusadas, entradas e tamanhos são validados e as saídas da interface usam texto seguro. O deploy final, chaves reais, compatibilidade de voz e operação comercial precisam ser validados no seu domínio e nas suas contas.
-
-
-## Evolução: assistente de sessões de estudo
-
-Caso de uso: estudantes que precisam sair de um objetivo vago para um bloco executável de estudo, usando voz ou texto. Exemplo: **“Quero estudar arrays em Java por 30 minutos”**.
-
-### Etapa 1 — disponível nesta alteração
-
-- Plano local determinístico para sessões de 5 a 180 minutos, com compreensão, prática e revisão. Aceita minutos e horas numéricos; sem tema ou duração, solicita os dados. O modo local usa a última mensagem do usuário para completar tema ou duração que faltam. Não produz exercícios específicos.
-- IA opcional orientada ao mesmo caso de uso: pode propor exercícios e comentar tentativas. A infraestrutura existente mantém chave no servidor, senha para chamadas pagas, histórico limitado e timeout. Não foi feita chamada paga real nesta validação.
-- Transcrição preserva o texto já digitado para revisão; não envia automaticamente. Mensagens específicas para permissão negada, microfone ausente, ausência de fala e falha de rede.
-- Leitura automática desativada por padrão; opção de ouvir a última resposta e preferência por voz pt-BR disponível. Interrupção antes da escuta e ao sair da página.
-- Modo local não mostra mais um aviso indevido pedindo APP_PASSWORD quando nenhuma IA está configurada.
-
-### Etapa 2 — próxima entrega
-
-Adicionar exercício por tema com critérios de correção e acompanhamento de tentativa, testando a qualidade das respostas da IA. Antes de abrir o uso pago ao público, implementar autenticação individual e limite persistente de consumo por usuário.
-
-### Etapa 3 — após validação de uso
-
-Avaliar transcrição no servidor como alternativa para navegadores sem reconhecimento nativo, com consentimento, limites de arquivo e custo; medir tempo até resposta e taxa de abandono. Persistência de sessões e lembretes exigem implementação própria; o aplicativo não os executa atualmente.
-
-### Compatibilidade e testes manuais
-
-A presença de SpeechRecognition indica capacidade, não garante funcionamento do serviço. HTTPS, permissões, conexão e políticas do navegador podem afetar a captura. Não é garantido reconhecimento offline. A síntese e as vozes disponíveis variam por dispositivo; texto é sempre o caminho principal.
-
-Referências: [SpeechRecognition / MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition), [Web Speech API / MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API).
-
-Validar em Chrome/Edge desktop, Chrome Android, Safari iOS e Firefox: gerar plano por texto; permitir/negar microfone; revisar transcrição sem perder rascunho; enviar; ouvir e interromper resposta; repetir com microfone indisponível. Esses testes físicos estão pendentes e não são substituídos por mocks.
-
-
-## Rodar agora
-
-Com Node.js 22 instalado, no PowerShell ou terminal:
+Requer Node.js 22.x e npm:
 
 ```bash
 git clone https://github.com/zrpires/IaAudio.git
@@ -112,44 +13,50 @@ npm ci
 npm start
 ```
 
-Se já tiver uma cópia local, preserve suas edições antes de atualizar com `git pull --ff-only`. Abra http://localhost:3000. O modo local funciona sem `.env` e sem conta de IA. Digite “Quero estudar Java”, envie e complete com “30 minutos”. Também pode informar tudo de uma vez.
+Abra http://localhost:3000. Nenhuma chave, senha, conta OpenAI ou saldo é necessário. `.env` é opcional e serve apenas para mudar `PORT`. O servidor de desenvolvimento aceita apenas arquivos públicos conhecidos; não expõe `.env`.
 
-Para IA generativa: copie `.env.example` para `.env`, preencha `OPENAI_API_KEY` e `APP_PASSWORD`, reinicie o servidor e informe a senha na interface. Na Vercel configure essas mesmas variáveis em Settings → Environment Variables e faça redeploy. Nunca coloque chaves no frontend ou no GitHub.
+## Usar voz gratuita no Brave e outros navegadores
 
-Correções de confiabilidade: limpar cancela a solicitação pendente e ignora respostas antigas; falhas de envio preservam um novo rascunho; não há dois envios simultâneos; microfone não inicia enquanto o chat responde; respostas inválidas do provedor recebem erro legível. Porta ocupada mostra orientação para definir PORT no `.env`.
+1. Abra a aplicação em HTTPS ou localhost.
+2. Mantenha **Voz gratuita no dispositivo** selecionado.
+3. Clique em **Preparar voz gratuita**. Na primeira vez, o navegador baixa a biblioteca e os pesos do Whisper Tiny (dezenas de MB). Aguarde até o modelo ficar pronto. A velocidade depende da conexão e do dispositivo.
+4. Clique em **Ativar microfone**, permita o acesso e fale por 5 a 15 segundos para o primeiro teste.
+5. Clique em **Finalizar gravação**. O áudio é convertido para PCM mono a 16 kHz e transcrito no dispositivo em um Web Worker.
+6. Revise a transcrição e clique em **Enviar mensagem** para gerar o roteiro.
 
-Verificação atual: `npm run check` e `npm test` (14 testes). Inclui servidor HTTP real, fluxo de texto com voz indisponível, transcrição e reprodução simuladas, cancelamento e preservação de rascunho. A voz real continua dependendo das permissões e serviços do dispositivo. O projeto não agenda lembretes nem salva sessões após recarregar.
+Há limite de 60 segundos/2 MB por gravação e timeout de 3 minutos por operação do modelo. **Cancelar captura** interrompe o processamento e descarta o áudio pendente. Downloads concluídos podem ser reaproveitados pelo cache do navegador; cancelamento durante a inferência libera o worker e exige preparar o modelo novamente. O cache não garante funcionamento offline após fechar/reabrir o navegador.
 
+Whisper Tiny é um modelo pequeno: pode errar palavras, números e termos técnicos. Revise antes de enviar. O navegador precisa oferecer microfone, MediaRecorder, Web Audio, Web Workers e WebAssembly. Computadores e celulares com pouca memória podem não conseguir executar o modelo; texto continua disponível. Não se promete compatibilidade com qualquer versão de navegador ou dispositivo.
 
-## Voz no Brave e em outros navegadores
+O modo alternativo **Reconhecimento do navegador** não baixa o modelo, mas depende do serviço do próprio navegador e pode falhar no Brave. Esse serviço pode enviar áudio ao provedor do navegador. A leitura das respostas usa as vozes disponíveis no sistema.
 
-O modo padrão **Gravação compatível** usa `getUserMedia` e `MediaRecorder`, sem depender de `SpeechRecognition`. O servidor envia o arquivo à OpenAI e devolve o texto para revisão. Navegadores modernos como Brave, Firefox, Chrome, Edge e Safari podem usar esse caminho quando oferecem HTTPS, microfone, permissões e um formato compatível. A interface escolhe WebM/Opus, MP4 ou Ogg conforme o suporte real do dispositivo. Não há garantia para todo navegador, versão, política corporativa ou dispositivo.
+## Privacidade e custos
 
-### Configuração necessária na Vercel
+- No modo local, o áudio não é enviado ao servidor nem à OpenAI. A inferência ocorre no dispositivo.
+- A biblioteca e os modelos são baixados de jsDelivr e Hugging Face. Esses serviços recebem as solicitações de download e dados de conexão, mas o código não lhes envia a gravação.
+- O chat envia apenas texto ao servidor deste aplicativo, que responde por regras e não chama APIs de IA.
+- Não há cobrança de API, assinatura, cartão nem créditos para usar os recursos desta versão. Downloads usam sua conexão e o processamento usa o seu equipamento.
+- A conversa permanece na aba; recarregar apaga o histórico. Exporte antes se quiser guardar o texto.
 
-Em Settings → Environment Variables:
+## Atualizar na Vercel
 
-| Variável | Valor |
-| --- | --- |
-| `TRANSCRIPTION_API_KEY` | Chave da API OpenAI com saldo e acesso ao modelo |
-| `APP_PASSWORD` | Senha de acesso definida por você |
-| `TRANSCRIPTION_MODEL` | `gpt-transcribe` (padrão; pode ser substituído por um modelo de transcrição disponível na conta) |
+Importe o repositório, com raiz na raiz do projeto, Framework **Other**, Node.js **22.x**, Build Command vazio e Output Directory **public**. `vercel.json` define as rotas e a política de conteúdo necessária para o runtime WASM e os downloads do modelo.
 
-Faça **Redeploy** após salvar. Informe APP_PASSWORD em **Acesso à IA** na página. Não coloque a chave no GitHub ou no frontend. Se já houver `OPENAI_API_KEY`, ela será usada como alternativa; usar apenas `TRANSCRIPTION_API_KEY` permite manter o chat em modo local. Ter ChatGPT não confirma saldo ou acesso à API.
+As variáveis antigas `OPENAI_API_KEY`, `OPENAI_MODEL`, `TRANSCRIPTION_API_KEY`, `TRANSCRIPTION_MODEL` e `APP_PASSWORD` não são utilizadas. Você pode removê-las em Settings → Environment Variables e fazer redeploy. **Mesmo que permaneçam configuradas, o código não faz chamadas pagas.** A rota antiga `/api/transcribe` responde HTTP 410 para impedir gastos de clientes antigos; atualize a página com Ctrl+Shift+R.
 
-### Uso
+O plano de hospedagem pertence à sua conta. O aplicativo não depende de funções pagas de IA; confira os termos e limites do plano de hospedagem que você escolher. Para executar no seu computador não é necessário contratar hospedagem.
 
-1. Selecione **Gravação compatível (Brave e outros)**.
-2. Informe a senha, clique em **Ativar microfone** e permita o acesso.
-3. Fale seu objetivo. Clique em **Finalizar gravação** ou aguarde o limite de 60 segundos.
-4. O áudio é enviado ao servidor e à OpenAI; aguarde o texto, revise e clique em **Enviar mensagem**.
+## Verificação
 
-**Cancelar captura** descarta a gravação antes de enviá-la. Se a transcrição já começou, o cancelamento impede que ela altere a tela; ele não garante cancelar o processamento já recebido pelo provedor. Limite de 2 MB por áudio e timeout de 45 segundos no provedor. A chave e a senha são verificadas antes de uma chamada paga. A aplicação não salva o áudio em disco; o provedor aplica suas políticas de dados. O recurso exige conexão e pode gerar custos.
+```bash
+npm run check
+npm test
+```
 
-O modo **Reconhecimento do navegador** continua disponível como opção separada. Seu serviço pode falhar ou estar bloqueado no Brave; isso não implica defeito no microfone. Nenhum envio de áudio ao servidor ocorre nesse modo. Sem configuração da transcrição, a tela explica as variáveis pendentes em vez de prometer funcionamento. Texto continua disponível em ambos os modos.
+30 testes cobrem proteção do chat, ausência de chamadas pagas mesmo com variáveis antigas, endpoint pago desativado, worker local simulado, preparação/cancelamento, decodificação PCM, silêncio, formatos de gravação, preservação de rascunhos e servidor HTTP real. Os testes simulados não comprovam a precisão do Whisper nem a captura de um microfone físico.
 
-### Validação
+## Modelo e biblioteca
 
-`npm run check` e `npm test`: 30 testes. Incluem captura com gravador simulado, formatos WebM/MP4/Ogg, cancelamento durante permissão e upload, liberação do microfone, autenticação, limite de tamanho, erros do provedor, integração multipart simulada e fluxo completo do cliente sem SpeechRecognition. Esses testes não comprovam transcrição real no Brave nem acesso ao modelo na sua conta; falta configurar a chave e realizar uma gravação real no dispositivo.
-
-Referência: https://developers.openai.com/api/docs/guides/speech-to-text
+- [Transformers.js](https://github.com/huggingface/transformers.js), versão fixada em **3.8.1**, executando ONNX Runtime WASM com uma thread, sem exigir WebGPU.
+- [Xenova/whisper-tiny](https://huggingface.co/Xenova/whisper-tiny), multilíngue, quantização q8, idioma de transcrição português.
+- O worker só é iniciado quando você clica em preparar. Arquivos de terceiros são baixados por HTTPS; bibliotecas e pesos têm suas próprias licenças, disponíveis nos projetos de origem.

@@ -1,3 +1,14 @@
+# Estado atual — versão gratuita
+
+- `npm run check` aprovado; `npm test`: 30 testes aprovados.
+- Chat por regras locais, sem chamadas de rede para provedores pagos, inclusive com variáveis antigas presentes.
+- Endpoint pago de transcrição desativado (HTTP 410).
+- Worker WASM e gravação testados com dependências simuladas: carregamento, progresso, PCM 16 kHz, silêncio, cancelamento e erros.
+- Testes de servidor HTTP real para página, módulos e chat.
+- A precisão do modelo e uma gravação física no Brave ainda dependem de teste no dispositivo final. Não se afirma suporte universal nem cache offline garantido.
+
+## Histórico das versões anteriores
+
 # Validação — 6 de novembro de 2026
 
 - `npm ci`: passou.
