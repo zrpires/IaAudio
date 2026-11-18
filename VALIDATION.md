@@ -3,7 +3,10 @@
 - `npm run check` e os 30 testes passaram.
 - Os testes do cliente agora conferem os seletores contra os IDs do HTML real, evitando que um controle ausente passe despercebido no mock.
 - Removidos estilos e regras de loja/despesas sem uso; preservados os módulos de captura, worker, transcrição local e proteção contra APIs pagas.
-- A prévia local não é acessível ao navegador compartilhado (`ERR_CONNECTION_REFUSED`); inspeção visual deve ocorrer na URL publicada.
+- A prévia local não foi acessível ao navegador compartilhado (`ERR_CONNECTION_REFUSED`); a inspeção ocorreu na URL publicada.
+- Layout desktop inspecionado visualmente: viewport e largura do conteúdo de 1348 px, sem rolagem horizontal.
+- Na nova interface, o modelo gratuito carregou de verdade, o exemplo Java em 30 minutos gerou o roteiro e a limpeza da sessão funcionou.
+- CSS inclui adaptações de tablet/celular e movimento reduzido; não foi executada captura em dispositivo móvel físico nesta revisão.
 
 # Estado atual — versão gratuita
 
